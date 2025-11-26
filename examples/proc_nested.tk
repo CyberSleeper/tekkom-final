@@ -1,0 +1,18 @@
+{
+    var x : integer
+    proc outer {
+        var y : integer
+        proc inner {
+            ;
+            put "inner: x=", x, " y=", y
+        }
+        ;
+        y := 10
+        put "outer calling inner"
+        inner
+    }
+    ;
+    x := 5
+    put "main calling outer"
+    outer
+}
