@@ -21,7 +21,8 @@ class Generate
           divStack          = new int[stackSize], // divide by zero routine
           printStack        = new int[stackSize], // print routine
           boundStack        = new int[stackSize], // subscript out of range routine
-          returnAddrStack   = new int[stackSize]; // fixing up/backpatching return address
+          returnAddrStack   = new int[stackSize], // fixing up/backpatching return address
+          callStack         = new int[stackSize]; // store procedure address for calls
 
     int ll, on, top, addr, kode, cell;
     private String currConst;
@@ -38,6 +39,7 @@ class Generate
         stackInit(printStack);
         stackInit(boundStack);
         stackInit(returnAddrStack);
+        stackInit(callStack);
 
         cell = 0;
     }
@@ -237,6 +239,12 @@ class Generate
                     System.out.println("Too many nested scope.");
                 else
                 {
+                    if (Context.currentStr != null) {
+                         Bucket b = Context.symbolHash.find(Context.currentStr);
+                         if (b != null && b.getIdKind() == Bucket.PROCEDURE && b.getAddress() == Bucket.UNDEFINED) {
+                             b.setAddress(cell);
+                         }
+                    }
                     HMachine.memory[cell] = HMachine.NAME;
                     HMachine.memory[cell+1] = ll;
                     HMachine.memory[cell+2] = 0;
@@ -690,6 +698,41 @@ class Generate
                 HMachine.memory[cell+28] = HMachine.ADD;
 
                 cell = cell + 29;
+                break;
+                
+            // R42 : construct instructions to return from procedure
+            case 42:
+                HMachine.memory[cell] = HMachine.BR;
+                cell = cell + 1;
+                break;
+
+            // R44 : construct instructions to call a procedure
+            case 44:
+                addr = stackPop(callStack, addr);
+                // Push return address (cell + 5)
+                HMachine.memory[cell] = HMachine.PUSH;
+                HMachine.memory[cell+1] = cell + 5;
+                // Push procedure address
+                HMachine.memory[cell+2] = HMachine.PUSH;
+                HMachine.memory[cell+3] = addr;
+                // Branch
+                HMachine.memory[cell+4] = HMachine.BR;
+                
+                cell = cell + 5;
+                break;
+
+            // R45 : retrieve procedure address and push to callStack
+            case 45:
+                if (Context.symbolHash.isExist(Context.currentStr)) {
+                    Bucket b = Context.symbolHash.find(Context.currentStr);
+                    if (b.getIdKind() == Bucket.PROCEDURE) {
+                         stackPush(b.getAddress(), callStack);
+                    } else {
+                        System.out.println("Error: " + Context.currentStr + " is not a procedure.");
+                    }
+                } else {
+                     System.out.println("Error: Procedure " + Context.currentStr + " undefined.");
+                }
                 break;
 
             // R49 : construct instructions similar to R31
