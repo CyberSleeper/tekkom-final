@@ -1,0 +1,16 @@
+{
+var x : integer
+proc exampleProc
+{ ;
+x := 25
+put "Inside exampleProc - x: ", x
+} ;
+put "Before calling exampleProc - x is not initialized yet"
+exampleProc
+put "After calling exampleProc - x: ", x
+if x = 25 then
+put "-- Success! x is updated --"
+else
+put "-- Error: x not updated --"
+end if
+}

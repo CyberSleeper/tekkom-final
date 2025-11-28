@@ -1,0 +1,27 @@
+{
+var x : integer
+integer func recursiveFunc = {
+var localC : integer;
+localC := 5
+x := x + localC
+put "localC in recursiveFunc: ", localC
+put "x in recursiveFunc: ", x
+if x < 10 then
+localC := 2 * x + recursiveFunc
+put "localC after recursion: ", localC
+end if
+;
+localC
+}
+var y : integer;
+put "Recursive function example"
+x := 2
+put " --- x before calling recursiveFunc: ", x
+x := x + recursiveFunc
+put " --- x after calling recursiveFunc: ", x
+if x = 21 then
+put "-- Success: x = 21 --"
+else
+put "-- Failure: x != 21 --"
+end if
+}

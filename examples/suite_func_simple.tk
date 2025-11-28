@@ -1,0 +1,13 @@
+{
+var x : integer
+integer func doubleX = x * 3
+;
+x := 5
+put "Before calling function - x: ", x
+put "Result of calling doubleX: ", doubleX
+if doubleX = 15 then
+put "-- Success: doubleX = 15 --"
+else
+put "-- Failure: doubleX != 15 --"
+end if
+}

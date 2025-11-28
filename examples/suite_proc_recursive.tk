@@ -1,0 +1,25 @@
+{
+    var x : integer
+    proc recursiveProc
+    {
+        var localC : integer;
+        localC := 3
+        x := x + localC
+        put "localC in recursiveProc: ", localC
+        put "x in recursiveProc: ", x
+        if x < 12 then
+        recursiveProc
+        end if
+    }
+    var y : integer;
+    put "Recursive Procedure Example"
+    x := 3
+    put " --- x before calling recursiveProc: ", x
+    recursiveProc
+    put " --- x after calling recursiveProc: ", x
+    if x = 12 then
+        put "-- Success: x = 12 --"
+    else
+        put "-- Failure: x != 12 --"
+    end if
+}

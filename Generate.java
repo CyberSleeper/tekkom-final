@@ -217,6 +217,21 @@ class Generate
         cell = cell + 7;
     }
 
+    // Method to store address of a function or procedure in memory
+    void setAddress(){
+        if(Context.currentStr != null && Context.symbolHash.find(Context.currentStr) != null){
+            if(Context.symbolHash.find(Context.currentStr).getIdKind() == Bucket.PROCEDURE){
+                if (Context.symbolHash.find(Context.currentStr).getAddress() == Bucket.UNDEFINED) {
+                    Context.symbolHash.find(Context.currentStr).setAddress(cell);
+                }
+            } else if(Context.symbolHash.find(Context.currentStr).getIdKind() == Bucket.FUNCTION){
+                if (Context.symbolHash.find(Context.currentStr).getAddress() == Bucket.UNDEFINED) {
+                    Context.symbolHash.find(Context.currentStr).setAddress(cell);
+                }
+            }
+        }
+    }
+
     // Method to perform the code generation rules
     public void R(int ruleNo)
     {
@@ -239,12 +254,7 @@ class Generate
                     System.out.println("Too many nested scope.");
                 else
                 {
-                    if (Context.currentStr != null) {
-                         Bucket b = Context.symbolHash.find(Context.currentStr);
-                         if (b != null && b.getIdKind() == Bucket.PROCEDURE && b.getAddress() == Bucket.UNDEFINED) {
-                             b.setAddress(cell);
-                         }
-                    }
+                    setAddress();
                     HMachine.memory[cell] = HMachine.NAME;
                     HMachine.memory[cell+1] = ll;
                     HMachine.memory[cell+2] = 0;
@@ -265,6 +275,7 @@ class Generate
                     System.out.println("Too many nested scope.");
                 else
                 {
+                    setAddress();
                     HMachine.memory[cell] = HMachine.PUSH;
                     HMachine.memory[cell+1] = HMachine.undefined;
                     HMachine.memory[cell+2] = HMachine.NAME;
@@ -705,23 +716,26 @@ class Generate
                 HMachine.memory[cell] = HMachine.BR;
                 cell = cell + 1;
                 break;
+            
+            case 43:
+                HMachine.memory[cell] = HMachine.FLIP;
+                HMachine.memory[cell+1] = HMachine.BR;
+                cell = cell + 2;
+                break;
 
-            // R44 : construct instructions to call a procedure
             case 44:
                 addr = stackPop(callStack, addr);
-                // Push return address (cell + 5)
+                // Push return address
                 HMachine.memory[cell] = HMachine.PUSH;
-                HMachine.memory[cell+1] = cell + 5;
+                HMachine.memory[cell+1] = cell+5;
                 // Push procedure address
                 HMachine.memory[cell+2] = HMachine.PUSH;
                 HMachine.memory[cell+3] = addr;
                 // Branch
                 HMachine.memory[cell+4] = HMachine.BR;
-                
                 cell = cell + 5;
                 break;
 
-            // R45 : retrieve procedure address and push to callStack
             case 45:
                 if (Context.symbolHash.isExist(Context.currentStr)) {
                     Bucket b = Context.symbolHash.find(Context.currentStr);
@@ -735,13 +749,61 @@ class Generate
                 }
                 break;
 
+            case 46:
+                if (Context.symbolHash.isExist(Context.currentStr)) {
+                    Bucket b = Context.symbolHash.find(Context.currentStr);
+                    if (b.getIdKind() == Bucket.FUNCTION) {
+                         stackPush(b.getAddress(), callStack);
+                    } else {
+                        System.out.println("Error: " + Context.currentStr + " is not a function.");
+                    }
+                } else {
+                     System.out.println("Error: Function " + Context.currentStr + " undefined.");
+                }
+                break;
+
+            case 47:
+                addr = stackPop(callStack, addr);
+                
+                HMachine.memory[cell] = HMachine.PUSH;
+                HMachine.memory[cell+1] = cell+5;
+                
+                HMachine.memory[cell+2] = HMachine.PUSH;
+                HMachine.memory[cell+3] = addr;
+
+                HMachine.memory[cell+4] = HMachine.BR;
+
+                // Cleanup
+                HMachine.memory[cell+5] = HMachine.FLIP;
+                HMachine.memory[cell+6] = HMachine.PUSHMT;
+                HMachine.memory[cell+7] = HMachine.FLIP;
+                HMachine.memory[cell+8] = HMachine.SUB;
+                HMachine.memory[cell+9] = HMachine.FLIP;
+                HMachine.memory[cell+10] = HMachine.STORE;
+                HMachine.memory[cell+11] = HMachine.POP;
+                cell = cell + 12;
+                break;
+
+            case 48:
+                HMachine.memory[cell] = HMachine.FLIP;
+                HMachine.memory[cell+1] = HMachine.PUSHMT;
+                HMachine.memory[cell+2] = HMachine.FLIP;
+                HMachine.memory[cell+3] = HMachine.SUB;
+                HMachine.memory[cell+4] = HMachine.FLIP;
+                HMachine.memory[cell+5] = HMachine.STORE;
+                cell = cell + 6;
+                break;
+
             // R49 : construct instructions similar to R31
             //       for non-function identifier
             case 49:
                 kode = Context.symbolHash.find(Context.currentStr).getIdKind();
 
-                if (kode == Bucket.FUNCTION)
-                    System.out.println("Unable to perform function implemetation.");
+                if (kode == Bucket.FUNCTION) {
+                    HMachine.memory[cell] = HMachine.PUSH;
+                    HMachine.memory[cell+1] = cell+5;
+                    cell = cell + 2;
+                }
                 else
                     obtainAddress();
 
@@ -752,8 +814,12 @@ class Generate
             case 50:
                 kode = Context.symbolHash.find(Context.currentStr).getIdKind();
 
-                if (kode == Bucket.FUNCTION)
-                    System.out.println("Unable to perform function implemetation.");
+                if (kode == Bucket.FUNCTION) {
+                   HMachine.memory[cell] = HMachine.PUSH;
+                   HMachine.memory[cell+1] = Context.symbolHash.find(Context.currentStr).getAddress();
+                   HMachine.memory[cell+2] = HMachine.BR;
+                   cell = cell + 3;
+                }
                 else
                 {
                    HMachine.memory[cell] = HMachine.LOAD;

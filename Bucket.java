@@ -51,6 +51,11 @@ class Bucket
         this.address = address;
     }
 
+    public void setParams(int params)
+    {
+        this.params = params;
+    }
+
     public void setNextBucket()
     {
         nextBucket = null;
@@ -69,6 +74,11 @@ class Bucket
     public int getAddress()
     {
         return address;
+    }
+
+    public int getParams()
+    {
+        return params;
     }
 
     public int getLexicLev()
@@ -158,5 +168,6 @@ class Bucket
     private int idType;
     private int idKind;
     private int address;
+    private int params;
     private Bucket nextBucket;
 }

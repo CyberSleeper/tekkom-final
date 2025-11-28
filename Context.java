@@ -24,6 +24,7 @@ class Context
         symbolStack = new Stack();
         typeStack = new Stack();
         orderNumberStack = new Stack();
+        argumentStack = new Stack();
         printSymbols = false;
         errorCount = 0;
     }
@@ -199,10 +200,87 @@ class Context
                 }
                 break;
             case 22:
-                symbolHash.find(currentStr).setLLON(lexicalLevel, orderNumber);
+                symbolHash.find(currentStr).setLexicLev(lexicalLevel);
+                symbolHash.find(currentStr).setOrderNum(orderNumber);
+                orderNumber++;
+                break;
+            case 23:
+                typeStack.push(typeStack.peek());
                 break;
             case 24:
                 symbolHash.find(currentStr).setIdKind(Bucket.PROCEDURE);
+                break;
+            case 25:
+                symbolHash.find(currentStr).setIdKind(Bucket.SCALAR);
+                symbolHash.find(currentStr).setOrderNum(-6-orderNumber);
+                orderNumber++;
+                break;
+            case 26:
+                symbolHash.find(currentStr).setIdKind(Bucket.FUNCTION);
+                break;
+            case 27:
+                C(2);
+                break;
+            case 28:
+                break;
+            case 29:
+                break;
+            case 30:
+                //push jumlah argument = 0
+                argumentStack.push(new Integer(0));
+                break;
+            case 31:
+                break;
+            case 32:
+                int noOfArgs = ((Integer)argumentStack.pop()).intValue();
+                if (noOfArgs != symbolHash.find((String)symbolStack.peek()).getParams()) {
+                    System.out.println("Arguments and parameter not matching " + currentLine + ": " + (String)symbolStack.peek());
+                    errorCount++;
+                }
+                break;
+            case 33:
+                //check tipe
+                switch (symbolHash.find((String)symbolStack.peek()).getIdKind())
+                {
+                    case Bucket.UNDEFINED:
+                        System.out.println("Variable not fully defined at line " + currentLine + ": " + currentStr);
+                        errorCount++;
+                        break;
+                    case Bucket.ARRAY:
+                        System.out.println("Function variable expected at line " + currentLine + ": " + currentStr);
+                        errorCount++;
+                        break;
+                    case Bucket.SCALAR:
+                        System.out.println("Function variable expected at line " + currentLine + ": " + currentStr);
+                        errorCount++;
+                        break;
+                }
+                break;
+            case 34:
+                int argument = ((Integer)argumentStack.pop()).intValue();
+                argument++;
+                argumentStack.push(new Integer(argument));
+                break;
+            case 35:
+                int params = ((Integer)argumentStack.pop()).intValue();
+                symbolHash.find((String)symbolStack.peek()).setParams(params);
+                break;
+            case 36:
+                temp = ((Integer)typeStack.pop()).intValue();
+                if (temp != ((Integer)typeStack.peek()).intValue())
+                {
+                    System.out.println("Unmatched type at line " + currentLine + ": " + currentStr);
+                    errorCount++;
+                }
+                break;
+            case 37:
+                int code = Context.symbolHash.find(Context.currentStr).getIdKind();
+                if (code == Bucket.FUNCTION) {
+                    C(33);
+                }
+                else {
+                    C(20);
+                }
                 break;
         }
     }
@@ -236,6 +314,7 @@ class Context
     private Stack symbolStack;
     private Stack typeStack;
     private Stack orderNumberStack;
+    private Stack argumentStack;
     public static String currentStr;
     public static int currentLine;
     private boolean printSymbols;

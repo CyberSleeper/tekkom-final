@@ -53,6 +53,8 @@ class Hash
                      System.out.println("Order Number : " + temp.getOrderNum());
                      System.out.println("Type         : " + temp.getIdTypeStr());
                      System.out.println("Kind         : " + temp.getIdKindStr());
+                     System.out.println("Address      : " + temp.getAddress());
+                     System.out.println("Params       : " + temp.getParams());
 
                      temp = temp.getNextBucket();
                      if (temp == null)
