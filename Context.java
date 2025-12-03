@@ -1,3 +1,4 @@
+
 /** 
  * @class: Context
  * This class constructs Context object that has attributes : 
@@ -57,11 +58,11 @@ class Context
                 break;
             case 3:
                 if (symbolHash.isExist(currentStr, lexicalLevel))
-                {
+                    {
                     System.out.println("Variable declared at line " + currentLine + ": " + currentStr);
                     errorCount++;
                     System.err.println("\nProcess terminated.\nAt least " + (errorCount + parser.yylex.num_error)
-                                       + " error(s) detected.");
+                            + " error(s) detected.");
                     System.exit(1);
                 }
                 else
@@ -78,11 +79,11 @@ class Context
                 break;
             case 6:
                 if (!symbolHash.isExist(currentStr))
-                {
+                    {
                     System.out.println("Variable undeclared at line " + currentLine + ": " + currentStr);
                     errorCount++;
                     System.err.println("\nProcess terminated.\nAt least " + (errorCount + parser.yylex.num_error)
-                                       + " error(s) detected.");
+                            + " error(s) detected.");
                     System.exit(1);
                 }
                 else
@@ -134,7 +135,7 @@ class Context
             case 14:
                 int temp = ((Integer)typeStack.pop()).intValue();
                 if (temp != ((Integer)typeStack.peek()).intValue())
-                {
+                    {
                     System.out.println("Unmatched type at line " + currentLine + ": " + currentStr);
                     errorCount++;
                 }
@@ -143,7 +144,7 @@ class Context
             case 15:
                 temp = ((Integer)typeStack.pop()).intValue();
                 if ((temp != Bucket.INTEGER) && ((Integer)typeStack.peek()).intValue() != Bucket.INTEGER)
-                {
+                    {
                     System.out.println("Unmatched type at line " + currentLine + ": " + currentStr);
                     errorCount++;
                 }
@@ -152,7 +153,7 @@ class Context
             case 16:
                 temp = symbolHash.find((String)symbolStack.peek()).getIdType();
                 if (temp != ((Integer)typeStack.peek()).intValue())
-                {
+                    {
                     System.out.println("Unmatched type at line " + currentLine + ": " + currentStr);
                     errorCount++;
                 }
@@ -160,7 +161,7 @@ class Context
             case 17:
                 temp = symbolHash.find((String)symbolStack.peek()).getIdType();
                 if (temp != Bucket.INTEGER)
-                {
+                    {
                     System.out.println("Type of integer expected at line " + currentLine + ": " + currentStr);
                     errorCount++;
                 }
@@ -212,7 +213,7 @@ class Context
                 break;
             case 25:
                 symbolHash.find(currentStr).setIdKind(Bucket.SCALAR);
-                symbolHash.find(currentStr).setOrderNum(-6-orderNumber);
+                symbolHash.find(currentStr).setOrderNum(-3-orderNumber);
                 orderNumber++;
                 break;
             case 26:
@@ -268,7 +269,7 @@ class Context
             case 36:
                 temp = ((Integer)typeStack.pop()).intValue();
                 if (temp != ((Integer)typeStack.peek()).intValue())
-                {
+                    {
                     System.out.println("Unmatched type at line " + currentLine + ": " + currentStr);
                     errorCount++;
                 }

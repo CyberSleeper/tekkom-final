@@ -1,0 +1,6 @@
+{
+    integer func f(x : integer) = x + 1
+    proc p(y : integer) { ; put y, skip }
+    ;
+    put "start", skip
+}

@@ -1,0 +1,13 @@
+{
+    integer func funcNoParam = 42
+
+    proc procNoParam
+    {
+        ;
+        put "Proc No Param Called", skip
+    }
+    ;
+
+    put "Func: ", funcNoParam, skip
+    procNoParam
+}

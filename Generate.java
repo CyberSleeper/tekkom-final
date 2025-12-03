@@ -1,7 +1,7 @@
-/** 
+/**
  * @class: Generate
  * This class generates codes as part of the whole
- * compilation process.
+ *compilation process.
  *
  * @author: DAJI Group (Dalton E. Pelawi & Jimmy)
  */
@@ -22,7 +22,8 @@ class Generate
           printStack        = new int[stackSize], // print routine
           boundStack        = new int[stackSize], // subscript out of range routine
           returnAddrStack   = new int[stackSize], // fixing up/backpatching return address
-          callStack         = new int[stackSize]; // store procedure address for calls
+          callStack         = new int[stackSize], // store procedure address for calls
+          paramCountStack   = new int[stackSize]; // store parameter counts
 
     int ll, on, top, addr, kode, cell;
     private String currConst;
@@ -40,6 +41,7 @@ class Generate
         stackInit(boundStack);
         stackInit(returnAddrStack);
         stackInit(callStack);
+        stackInit(paramCountStack);
 
         cell = 0;
     }
@@ -61,7 +63,7 @@ class Generate
     {
         stack[0] = stack[0] - 1;
         if (stack[0] < 1)
-        {
+            {
             System.out.println("Stack underflow in code generator.");
             System.exit(1);
         }
@@ -106,7 +108,7 @@ class Generate
         HMachine.memory[cell] = HMachine.NAME;
         HMachine.memory[cell+1] = 
             Context.symbolHash.find(Context.currentStr).getLexicLev();
-        HMachine.memory[cell+2] = 
+        HMachine.memory[cell+2] =
             Context.symbolHash.find(Context.currentStr).getOrderNum();
 
         cell = cell + 3;
@@ -117,7 +119,7 @@ class Generate
     void createPrintRoutine()
     {
         while (!isStackEmpty(printStack))
-        {
+            {
             top = stackPop(printStack, top);
             HMachine.memory[top] = cell;
         }
@@ -151,7 +153,7 @@ class Generate
         char[] message = ("Error division by 0 on line ").toCharArray();
 
         while (!isStackEmpty(divStack))
-        {
+            {
             top = stackPop(divStack, top);
             HMachine.memory[top] = cell;
         }
@@ -165,7 +167,7 @@ class Generate
         cell = cell + 5;
 
         for (int i = 0; i < message.length; i++)
-        {
+            {
             HMachine.memory[cell] = HMachine.PUSH;
             HMachine.memory[cell+1] = message[message.length - i - 1];
 
@@ -188,7 +190,7 @@ class Generate
         char[] message = ("Error - subscript out of range on line ").toCharArray();
 
         while (!isStackEmpty(boundStack))
-        {
+            {
             top = stackPop(boundStack, top);
             HMachine.memory[top] = cell;
         }
@@ -199,7 +201,7 @@ class Generate
         cell = cell + 2;
 
         for (int i = 0; i < message.length; i++)
-        {
+            {
             HMachine.memory[cell] = HMachine.PUSH;
             HMachine.memory[cell+1] = message[message.length - i - 1];
 
@@ -741,80 +743,13 @@ class Generate
                     Bucket b = Context.symbolHash.find(Context.currentStr);
                     if (b.getIdKind() == Bucket.PROCEDURE) {
                          stackPush(b.getAddress(), callStack);
+                         stackPush(b.getParams(), paramCountStack);
                     } else {
                         System.out.println("Error: " + Context.currentStr + " is not a procedure.");
                     }
-                } else {
-                     System.out.println("Error: Procedure " + Context.currentStr + " undefined.");
-                }
-                break;
 
-            case 46:
-                if (Context.symbolHash.isExist(Context.currentStr)) {
-                    Bucket b = Context.symbolHash.find(Context.currentStr);
-                    if (b.getIdKind() == Bucket.FUNCTION) {
-                         stackPush(b.getAddress(), callStack);
-                    } else {
-                        System.out.println("Error: " + Context.currentStr + " is not a function.");
-                    }
-                } else {
-                     System.out.println("Error: Function " + Context.currentStr + " undefined.");
-                }
-                break;
-
-            case 47:
-                addr = stackPop(callStack, addr);
-                
-                HMachine.memory[cell] = HMachine.PUSH;
-                HMachine.memory[cell+1] = cell+5;
-                
-                HMachine.memory[cell+2] = HMachine.PUSH;
-                HMachine.memory[cell+3] = addr;
-
-                HMachine.memory[cell+4] = HMachine.BR;
-
-                // Cleanup
-                HMachine.memory[cell+5] = HMachine.FLIP;
-                HMachine.memory[cell+6] = HMachine.PUSHMT;
-                HMachine.memory[cell+7] = HMachine.FLIP;
-                HMachine.memory[cell+8] = HMachine.SUB;
-                HMachine.memory[cell+9] = HMachine.FLIP;
-                HMachine.memory[cell+10] = HMachine.STORE;
-                HMachine.memory[cell+11] = HMachine.POP;
-                cell = cell + 12;
-                break;
-
-            case 48:
-                HMachine.memory[cell] = HMachine.FLIP;
-                HMachine.memory[cell+1] = HMachine.PUSHMT;
-                HMachine.memory[cell+2] = HMachine.FLIP;
-                HMachine.memory[cell+3] = HMachine.SUB;
-                HMachine.memory[cell+4] = HMachine.FLIP;
-                HMachine.memory[cell+5] = HMachine.STORE;
-                cell = cell + 6;
-                break;
-
-            // R49 : construct instructions similar to R31
-            //       for non-function identifier
-            case 49:
-                kode = Context.symbolHash.find(Context.currentStr).getIdKind();
-
-                if (kode == Bucket.FUNCTION) {
-                    HMachine.memory[cell] = HMachine.PUSH;
-                    HMachine.memory[cell+1] = cell+5;
-                    cell = cell + 2;
-                }
-                else
-                    obtainAddress();
-
-                break;
-
-            // R50 : construct instructions similar to R32
-            //       for non-function identifier
-            case 50:
-                kode = Context.symbolHash.find(Context.currentStr).getIdKind();
-
-                if (kode == Bucket.FUNCTION) {
+                if (kode == Bucket.FUNCTION)
+                    {
                    HMachine.memory[cell] = HMachine.PUSH;
                    HMachine.memory[cell+1] = Context.symbolHash.find(Context.currentStr).getAddress();
                    HMachine.memory[cell+2] = HMachine.BR;

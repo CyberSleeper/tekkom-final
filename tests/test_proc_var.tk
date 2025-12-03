@@ -1,0 +1,13 @@
+{
+    proc procNoParam
+    {
+        ;
+        put "Proc No Param Called", skip
+    }
+    
+    var x : integer
+    ;
+    
+    x := 10
+    put x, skip
+}

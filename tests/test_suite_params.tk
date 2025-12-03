@@ -1,0 +1,8 @@
+{
+    integer func f1(x : integer) = x
+    integer func f2(y : integer) = y
+    proc A(z : integer) { ; put z, skip }
+    proc B(w : integer) { ; put w, skip }
+    ;
+    put "start", skip
+}
