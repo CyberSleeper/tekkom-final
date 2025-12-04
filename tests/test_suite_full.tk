@@ -15,13 +15,9 @@
     }
     ;
 
-    put "--- START TESTING ---", skip
-    
     procNoParam
     procWithParam(100)
     
     put "Func No Param: ", funcNoParam, skip
     put "Func With Param: ", funcWithParam(20), skip
-
-    put "--- END TESTING ---", skip
 }
