@@ -1,35 +1,33 @@
 /**
  * @class: Generate
- * This class generates codes as part of the whole
- *compilation process.
+ *         This class generates codes as part of the whole
+ *         compilation process.
  *
  * @author: DAJI Group (Dalton E. Pelawi & Jimmy)
  */
 
-class Generate
-{
-    final int stackSize   = 102,
-              loopMarker  = -1,
-              scopeMarker = -1;
+class Generate {
+    final int stackSize = 102,
+            loopMarker = -1,
+            scopeMarker = -1;
 
-    int[] R7R9Stack         = new int[stackSize], // unconditional branches
-          R8R10Stack        = new int[stackSize], // conditional branches
-          R51R52Stack       = new int[stackSize], // exit statements
-          R11R12Stack       = new int[stackSize], // loops
-          dynamicArrayStack = new int[stackSize], // allocating arrays
-          lastArrayStack    = new int[stackSize], // referencing arrays
-          divStack          = new int[stackSize], // divide by zero routine
-          printStack        = new int[stackSize], // print routine
-          boundStack        = new int[stackSize], // subscript out of range routine
-          returnAddrStack   = new int[stackSize], // fixing up/backpatching return address
-          callStack         = new int[stackSize], // store procedure address for calls
-          paramCountStack   = new int[stackSize]; // store parameter counts
+    int[] R7R9Stack = new int[stackSize], // unconditional branches
+            R8R10Stack = new int[stackSize], // conditional branches
+            R51R52Stack = new int[stackSize], // exit statements
+            R11R12Stack = new int[stackSize], // loops
+            dynamicArrayStack = new int[stackSize], // allocating arrays
+            lastArrayStack = new int[stackSize], // referencing arrays
+            divStack = new int[stackSize], // divide by zero routine
+            printStack = new int[stackSize], // print routine
+            boundStack = new int[stackSize], // subscript out of range routine
+            returnAddrStack = new int[stackSize], // fixing up/backpatching return address
+            callStack = new int[stackSize], // store procedure address for calls
+            paramCountStack = new int[stackSize]; // store parameter counts
 
     int ll, on, top, addr, kode, cell;
     private String currConst;
 
-    public Generate()
-    {
+    public Generate() {
         stackInit(R7R9Stack);
         stackInit(R8R10Stack);
         stackInit(R51R52Stack);
@@ -46,24 +44,20 @@ class Generate
         cell = 0;
     }
 
-    void stackInit(int[] stack)
-    {
+    void stackInit(int[] stack) {
         stack[0] = 1;
     }
 
-    void stackPush(int item, int[] stack)
-    {
+    void stackPush(int item, int[] stack) {
         stack[stack[0]] = item;
         stack[0] = stack[0] + 1;
-        if (stack[0] > stackSize-1)
+        if (stack[0] > stackSize - 1)
             System.out.println("Stack overflow in code generator.");
     }
 
-    int stackPop(int[] stack, int top)
-    {
+    int stackPop(int[] stack, int top) {
         stack[0] = stack[0] - 1;
-        if (stack[0] < 1)
-            {
+        if (stack[0] < 1) {
             System.out.println("Stack underflow in code generator.");
             System.exit(1);
         }
@@ -72,8 +66,7 @@ class Generate
         return top;
     }
 
-    boolean isStackEmpty(int[] stack)
-    {
+    boolean isStackEmpty(int[] stack) {
         boolean flag = false;
 
         if (stack[0] == 1)
@@ -82,8 +75,7 @@ class Generate
         return flag;
     }
 
-    int stackTop(int[] stack)
-    {
+    int stackTop(int[] stack) {
         int ptr;
 
         ptr = stack[0] - 1;
@@ -93,140 +85,128 @@ class Generate
     }
 
     // Method for NOT instruction
-    void emitNot()
-    {
+    void emitNot() {
         HMachine.memory[cell] = HMachine.PUSH;
-        HMachine.memory[cell+1] = 0;
-        HMachine.memory[cell+2] = HMachine.EQ;
+        HMachine.memory[cell + 1] = 0;
+        HMachine.memory[cell + 2] = HMachine.EQ;
 
         cell = cell + 3;
     }
 
     // Method to retrieve the address of a variable
-    void obtainAddress()
-    {
+    void obtainAddress() {
         HMachine.memory[cell] = HMachine.NAME;
-        HMachine.memory[cell+1] = 
-            Context.symbolHash.find(Context.currentStr).getLexicLev();
-        HMachine.memory[cell+2] =
-            Context.symbolHash.find(Context.currentStr).getOrderNum();
+        HMachine.memory[cell + 1] = Context.symbolHash.find(Context.currentStr).getLexicLev();
+        HMachine.memory[cell + 2] = Context.symbolHash.find(Context.currentStr).getOrderNum();
 
         cell = cell + 3;
     }
 
     // Method to construct a routine to print text,
     // and to backpatch the address which called the routine
-    void createPrintRoutine()
-    {
-        while (!isStackEmpty(printStack))
-            {
+    void createPrintRoutine() {
+        while (!isStackEmpty(printStack)) {
             top = stackPop(printStack, top);
             HMachine.memory[top] = cell;
         }
 
         HMachine.memory[cell] = HMachine.FLIP;
-        HMachine.memory[cell+1] = HMachine.PRINTC;
-        HMachine.memory[cell+2] = HMachine.PUSH;
-        HMachine.memory[cell+3] = 1;
-        HMachine.memory[cell+4] = HMachine.SUB;
-        HMachine.memory[cell+5] = HMachine.PUSH;
-        HMachine.memory[cell+6] = 2;
-        HMachine.memory[cell+7] = HMachine.DUP;
-        HMachine.memory[cell+8] = HMachine.PUSH;
-        HMachine.memory[cell+9] = 0;
-        HMachine.memory[cell+10] = HMachine.EQ;
-        HMachine.memory[cell+11] = HMachine.PUSH;
-        HMachine.memory[cell+12] = cell;
-        HMachine.memory[cell+13] = HMachine.BF;
-        HMachine.memory[cell+14] = HMachine.PUSH;
-        HMachine.memory[cell+15] = 1;
-        HMachine.memory[cell+16] = HMachine.POP;
-        HMachine.memory[cell+17] = HMachine.BR;
+        HMachine.memory[cell + 1] = HMachine.PRINTC;
+        HMachine.memory[cell + 2] = HMachine.PUSH;
+        HMachine.memory[cell + 3] = 1;
+        HMachine.memory[cell + 4] = HMachine.SUB;
+        HMachine.memory[cell + 5] = HMachine.PUSH;
+        HMachine.memory[cell + 6] = 2;
+        HMachine.memory[cell + 7] = HMachine.DUP;
+        HMachine.memory[cell + 8] = HMachine.PUSH;
+        HMachine.memory[cell + 9] = 0;
+        HMachine.memory[cell + 10] = HMachine.EQ;
+        HMachine.memory[cell + 11] = HMachine.PUSH;
+        HMachine.memory[cell + 12] = cell;
+        HMachine.memory[cell + 13] = HMachine.BF;
+        HMachine.memory[cell + 14] = HMachine.PUSH;
+        HMachine.memory[cell + 15] = 1;
+        HMachine.memory[cell + 16] = HMachine.POP;
+        HMachine.memory[cell + 17] = HMachine.BR;
 
         cell = cell + 18;
     }
 
     // Method to construct a division-by-zero error routine,
     // and to backpatch the address which called the routine
-    void createCheckDiv()
-    {
+    void createCheckDiv() {
         char[] message = ("Error division by 0 on line ").toCharArray();
 
-        while (!isStackEmpty(divStack))
-            {
+        while (!isStackEmpty(divStack)) {
             top = stackPop(divStack, top);
             HMachine.memory[top] = cell;
         }
 
         HMachine.memory[cell] = HMachine.PUSH;
-        HMachine.memory[cell+1] = 0;
-        HMachine.memory[cell+2] = HMachine.EQ;
-        HMachine.memory[cell+3] = HMachine.FLIP;
-        HMachine.memory[cell+4] = HMachine.BF;
+        HMachine.memory[cell + 1] = 0;
+        HMachine.memory[cell + 2] = HMachine.EQ;
+        HMachine.memory[cell + 3] = HMachine.FLIP;
+        HMachine.memory[cell + 4] = HMachine.BF;
 
         cell = cell + 5;
 
-        for (int i = 0; i < message.length; i++)
-            {
+        for (int i = 0; i < message.length; i++) {
             HMachine.memory[cell] = HMachine.PUSH;
-            HMachine.memory[cell+1] = message[message.length - i - 1];
+            HMachine.memory[cell + 1] = message[message.length - i - 1];
 
             cell = cell + 2;
         }
 
         HMachine.memory[cell] = HMachine.PUSH;
-        HMachine.memory[cell+1] = message.length;
-        HMachine.memory[cell+2] = HMachine.PUSH;
-        stackPush(cell+3, printStack);
-        HMachine.memory[cell+4] = HMachine.BR;
+        HMachine.memory[cell + 1] = message.length;
+        HMachine.memory[cell + 2] = HMachine.PUSH;
+        stackPush(cell + 3, printStack);
+        HMachine.memory[cell + 4] = HMachine.BR;
 
         cell = cell + 5;
     }
 
     // Method to construct an array-index-out-of-bounds error routine,
     // and to backpatch the address which called the routine
-    void createOutOfRangeMessage()
-    {
+    void createOutOfRangeMessage() {
         char[] message = ("Error - subscript out of range on line ").toCharArray();
 
-        while (!isStackEmpty(boundStack))
-            {
+        while (!isStackEmpty(boundStack)) {
             top = stackPop(boundStack, top);
             HMachine.memory[top] = cell;
         }
 
         HMachine.memory[cell] = HMachine.PUSH;
-        HMachine.memory[cell+1] = 2 * message.length + 7 + cell;
+        HMachine.memory[cell + 1] = 2 * message.length + 7 + cell;
 
         cell = cell + 2;
 
-        for (int i = 0; i < message.length; i++)
-            {
+        for (int i = 0; i < message.length; i++) {
             HMachine.memory[cell] = HMachine.PUSH;
-            HMachine.memory[cell+1] = message[message.length - i - 1];
+            HMachine.memory[cell + 1] = message[message.length - i - 1];
 
             cell = cell + 2;
         }
 
         HMachine.memory[cell] = HMachine.PUSH;
-        HMachine.memory[cell+1] = message.length;
-        HMachine.memory[cell+2] = HMachine.PUSH;
-        stackPush(cell+3, printStack);
-        HMachine.memory[cell+4] = HMachine.BR;
-        HMachine.memory[cell+5] = HMachine.PRINTI;
-        HMachine.memory[cell+6] = HMachine.HALT;
+        HMachine.memory[cell + 1] = message.length;
+        HMachine.memory[cell + 2] = HMachine.PUSH;
+        stackPush(cell + 3, printStack);
+        HMachine.memory[cell + 4] = HMachine.BR;
+        HMachine.memory[cell + 5] = HMachine.PRINTI;
+        HMachine.memory[cell + 6] = HMachine.HALT;
 
         cell = cell + 7;
     }
 
     // Method to store address of a function or procedure in memory
-    void setAddress(){
-        if(Context.currentStr != null && Context.symbolHash.find(Context.currentStr) != null){
-            if(Context.symbolHash.find(Context.currentStr).getIdKind() == Bucket.PROCEDURE){
+    void setAddress() {
+        if (Context.currentStr != null && Context.symbolHash.find(Context.currentStr) != null) {
+            if (Context.symbolHash.find(Context.currentStr).getIdKind() == Bucket.PROCEDURE) {
                 if (Context.symbolHash.find(Context.currentStr).getAddress() == Bucket.UNDEFINED) {
                     Context.symbolHash.find(Context.currentStr).setAddress(cell);
                 }
-            } else if(Context.symbolHash.find(Context.currentStr).getIdKind() == Bucket.FUNCTION){
+            } else if (Context.symbolHash.find(Context.currentStr).getIdKind() == Bucket.FUNCTION) {
                 if (Context.symbolHash.find(Context.currentStr).getAddress() == Bucket.UNDEFINED) {
                     Context.symbolHash.find(Context.currentStr).setAddress(cell);
                 }
@@ -235,13 +215,11 @@ class Generate
     }
 
     // Method to perform the code generation rules
-    public void R(int ruleNo)
-    {
+    public void R(int ruleNo) {
         String teks;
 
-        //System.out.println("R" + ruleNo);
-        switch(ruleNo)
-        {
+        // System.out.println("R" + ruleNo);
+        switch (ruleNo) {
             // R0 : assign pc and mt
             case 0:
                 HMachine.mt = cell;
@@ -249,67 +227,64 @@ class Generate
                 break;
 
             // R1 : check if the (lexical level < display size),
-            //      contruct instructions to enter statement's scope
+            // contruct instructions to enter statement's scope
             case 1:
                 ll = Context.lexicalLevel;
                 if (ll > HMachine.displaySize)
                     System.out.println("Too many nested scope.");
-                else
-                {
+                else {
                     setAddress();
                     HMachine.memory[cell] = HMachine.NAME;
-                    HMachine.memory[cell+1] = ll;
-                    HMachine.memory[cell+2] = 0;
-                    HMachine.memory[cell+3] = HMachine.PUSHMT;
-                    HMachine.memory[cell+4] = HMachine.SETD;
-                    HMachine.memory[cell+5] = ll;
+                    HMachine.memory[cell + 1] = ll;
+                    HMachine.memory[cell + 2] = 0;
+                    HMachine.memory[cell + 3] = HMachine.PUSHMT;
+                    HMachine.memory[cell + 4] = HMachine.SETD;
+                    HMachine.memory[cell + 5] = ll;
 
                     cell = cell + 6;
                     stackPush(scopeMarker, dynamicArrayStack);
-                 }
+                }
                 break;
-            
+
             // R2 : check if (lexical level < display size),
-            //      construct instructions to enter expression's scope
+            // construct instructions to enter expression's scope
             case 2:
                 ll = Context.lexicalLevel;
                 if (ll > HMachine.displaySize)
                     System.out.println("Too many nested scope.");
-                else
-                {
+                else {
                     setAddress();
                     HMachine.memory[cell] = HMachine.PUSH;
-                    HMachine.memory[cell+1] = HMachine.undefined;
-                    HMachine.memory[cell+2] = HMachine.NAME;
-                    HMachine.memory[cell+3] = ll;
-                    HMachine.memory[cell+4] = 0;
-                    HMachine.memory[cell+5] = HMachine.PUSHMT;
-                    HMachine.memory[cell+6] = HMachine.SETD;
-                    HMachine.memory[cell+7] = ll;
+                    HMachine.memory[cell + 1] = HMachine.undefined;
+                    HMachine.memory[cell + 2] = HMachine.NAME;
+                    HMachine.memory[cell + 3] = ll;
+                    HMachine.memory[cell + 4] = 0;
+                    HMachine.memory[cell + 5] = HMachine.PUSHMT;
+                    HMachine.memory[cell + 6] = HMachine.SETD;
+                    HMachine.memory[cell + 7] = ll;
 
                     cell = cell + 8;
                     stackPush(scopeMarker, dynamicArrayStack);
-                 }
+                }
                 break;
 
             // R3 : construct instructions to allocate variable
             case 3:
                 on = stackPop(dynamicArrayStack, on);
-                while (!(on == scopeMarker))
-                {
+                while (!(on == scopeMarker)) {
                     HMachine.memory[cell] = HMachine.PUSHMT;
-                    HMachine.memory[cell+1] = HMachine.NAME;
-                    HMachine.memory[cell+2] = Context.lexicalLevel;
-                    HMachine.memory[cell+3] = on;
-                    HMachine.memory[cell+4] = HMachine.FLIP;
-                    HMachine.memory[cell+5] = HMachine.STORE;
-                    HMachine.memory[cell+6] = HMachine.PUSH;
-                    HMachine.memory[cell+7] = HMachine.undefined;
-                    HMachine.memory[cell+8] = HMachine.NAME;
-                    HMachine.memory[cell+9] = Context.lexicalLevel;
-                    HMachine.memory[cell+10] = on + 1;
-                    HMachine.memory[cell+11] = HMachine.LOAD;
-                    HMachine.memory[cell+12] = HMachine.DUP;
+                    HMachine.memory[cell + 1] = HMachine.NAME;
+                    HMachine.memory[cell + 2] = Context.lexicalLevel;
+                    HMachine.memory[cell + 3] = on;
+                    HMachine.memory[cell + 4] = HMachine.FLIP;
+                    HMachine.memory[cell + 5] = HMachine.STORE;
+                    HMachine.memory[cell + 6] = HMachine.PUSH;
+                    HMachine.memory[cell + 7] = HMachine.undefined;
+                    HMachine.memory[cell + 8] = HMachine.NAME;
+                    HMachine.memory[cell + 9] = Context.lexicalLevel;
+                    HMachine.memory[cell + 10] = on + 1;
+                    HMachine.memory[cell + 11] = HMachine.LOAD;
+                    HMachine.memory[cell + 12] = HMachine.DUP;
 
                     cell = cell + 13;
                     on = stackPop(dynamicArrayStack, on);
@@ -317,40 +292,40 @@ class Generate
                 break;
 
             // R5 : construct instructions to delete variable,
-            //      and exit from statement's scope
+            // and exit from statement's scope
             case 5:
                 ll = Context.lexicalLevel + 1;
 
                 HMachine.memory[cell] = HMachine.PUSHMT;
-                HMachine.memory[cell+1] = HMachine.NAME;
-                HMachine.memory[cell+2] = ll;
-                HMachine.memory[cell+3] = 0;
-                HMachine.memory[cell+4] = HMachine.SUB;
-                HMachine.memory[cell+5] = HMachine.POP;
-                HMachine.memory[cell+6] = HMachine.SETD;
-                HMachine.memory[cell+7] = ll;
+                HMachine.memory[cell + 1] = HMachine.NAME;
+                HMachine.memory[cell + 2] = ll;
+                HMachine.memory[cell + 3] = 0;
+                HMachine.memory[cell + 4] = HMachine.SUB;
+                HMachine.memory[cell + 5] = HMachine.POP;
+                HMachine.memory[cell + 6] = HMachine.SETD;
+                HMachine.memory[cell + 7] = ll;
 
                 cell = cell + 8;
                 break;
 
             // R6 : construct instructions to move calculation result,
-            //      delete variable, and exit from expression's scope
+            // delete variable, and exit from expression's scope
             case 6:
                 ll = Context.lexicalLevel + 1;
 
                 HMachine.memory[cell] = HMachine.NAME;
-                HMachine.memory[cell+1] = ll;
-                HMachine.memory[cell+2] = -2;
-                HMachine.memory[cell+3] = HMachine.FLIP;
-                HMachine.memory[cell+4] = HMachine.STORE;
-                HMachine.memory[cell+5] = HMachine.PUSHMT;
-                HMachine.memory[cell+6] = HMachine.NAME;
-                HMachine.memory[cell+7] = ll;
-                HMachine.memory[cell+8] = 0;
-                HMachine.memory[cell+9] = HMachine.SUB;
-                HMachine.memory[cell+10] = HMachine.POP;
-                HMachine.memory[cell+11] = HMachine.SETD;
-                HMachine.memory[cell+12] = ll;
+                HMachine.memory[cell + 1] = ll;
+                HMachine.memory[cell + 2] = -2;
+                HMachine.memory[cell + 3] = HMachine.FLIP;
+                HMachine.memory[cell + 4] = HMachine.STORE;
+                HMachine.memory[cell + 5] = HMachine.PUSHMT;
+                HMachine.memory[cell + 6] = HMachine.NAME;
+                HMachine.memory[cell + 7] = ll;
+                HMachine.memory[cell + 8] = 0;
+                HMachine.memory[cell + 9] = HMachine.SUB;
+                HMachine.memory[cell + 10] = HMachine.POP;
+                HMachine.memory[cell + 11] = HMachine.SETD;
+                HMachine.memory[cell + 12] = ll;
 
                 cell = cell + 13;
                 break;
@@ -358,9 +333,9 @@ class Generate
             // R7 : construct instructions for forward branch
             case 7:
                 HMachine.memory[cell] = HMachine.PUSH;
-                HMachine.memory[cell+1] = HMachine.undefined;
-                HMachine.memory[cell+2] = HMachine.BR;
-                stackPush(cell+1, R7R9Stack);
+                HMachine.memory[cell + 1] = HMachine.undefined;
+                HMachine.memory[cell + 2] = HMachine.BR;
+                stackPush(cell + 1, R7R9Stack);
 
                 cell = cell + 3;
                 break;
@@ -368,9 +343,9 @@ class Generate
             // R8 : construct instructions for conditional branch
             case 8:
                 HMachine.memory[cell] = HMachine.PUSH;
-                HMachine.memory[cell+1] = HMachine.undefined;
-                HMachine.memory[cell+2] = HMachine.BF;
-                stackPush(cell+1, R8R10Stack);
+                HMachine.memory[cell + 1] = HMachine.undefined;
+                HMachine.memory[cell + 2] = HMachine.BF;
+                stackPush(cell + 1, R8R10Stack);
 
                 cell = cell + 3;
                 break;
@@ -396,8 +371,8 @@ class Generate
             case 12:
                 HMachine.memory[cell] = HMachine.PUSH;
                 top = stackPop(R11R12Stack, top);
-                HMachine.memory[cell+1] = top;
-                HMachine.memory[cell+2] = HMachine.BR;
+                HMachine.memory[cell + 1] = top;
+                HMachine.memory[cell + 2] = HMachine.BR;
 
                 cell = cell + 3;
                 break;
@@ -405,9 +380,9 @@ class Generate
             // R13 : construct instructions for unary substract operation
             case 13:
                 HMachine.memory[cell] = HMachine.PUSH;
-                HMachine.memory[cell+1] = 0;
-                HMachine.memory[cell+2] = HMachine.FLIP;
-                HMachine.memory[cell+3] = HMachine.SUB;
+                HMachine.memory[cell + 1] = 0;
+                HMachine.memory[cell + 2] = HMachine.FLIP;
+                HMachine.memory[cell + 3] = HMachine.SUB;
 
                 cell = cell + 4;
                 break;
@@ -436,25 +411,25 @@ class Generate
             // R17 : construct instructions for divide operation
             case 17:
                 HMachine.memory[cell] = HMachine.PUSH;
-                HMachine.memory[cell+1] = 2;
-                HMachine.memory[cell+2] = HMachine.DUP;
-                HMachine.memory[cell+3] = HMachine.PUSH;
-                HMachine.memory[cell+4] = cell + 12;
-                HMachine.memory[cell+5] = HMachine.FLIP;
-                HMachine.memory[cell+6] = HMachine.PUSH;
-                HMachine.memory[cell+7] = cell + 16;
-                HMachine.memory[cell+8] = HMachine.FLIP;
-                HMachine.memory[cell+9] = HMachine.PUSH;
+                HMachine.memory[cell + 1] = 2;
+                HMachine.memory[cell + 2] = HMachine.DUP;
+                HMachine.memory[cell + 3] = HMachine.PUSH;
+                HMachine.memory[cell + 4] = cell + 12;
+                HMachine.memory[cell + 5] = HMachine.FLIP;
+                HMachine.memory[cell + 6] = HMachine.PUSH;
+                HMachine.memory[cell + 7] = cell + 16;
+                HMachine.memory[cell + 8] = HMachine.FLIP;
+                HMachine.memory[cell + 9] = HMachine.PUSH;
                 stackPush(cell + 10, divStack);
-                HMachine.memory[cell+11] = HMachine.BR;
-                HMachine.memory[cell+12] = HMachine.PUSH;
-                HMachine.memory[cell+13] = Context.currentLine;
-                HMachine.memory[cell+14] = HMachine.PRINTI;
-                HMachine.memory[cell+15] = HMachine.HALT;
-                HMachine.memory[cell+16] = HMachine.PUSH;
-                HMachine.memory[cell+17] = 1;
-                HMachine.memory[cell+18] = HMachine.POP;
-                HMachine.memory[cell+19] = HMachine.DIVI;
+                HMachine.memory[cell + 11] = HMachine.BR;
+                HMachine.memory[cell + 12] = HMachine.PUSH;
+                HMachine.memory[cell + 13] = Context.currentLine;
+                HMachine.memory[cell + 14] = HMachine.PRINTI;
+                HMachine.memory[cell + 15] = HMachine.HALT;
+                HMachine.memory[cell + 16] = HMachine.PUSH;
+                HMachine.memory[cell + 17] = 1;
+                HMachine.memory[cell + 18] = HMachine.POP;
+                HMachine.memory[cell + 19] = HMachine.DIVI;
 
                 cell = cell + 20;
                 break;
@@ -503,7 +478,7 @@ class Generate
             // R24 : construct instruction for less-than-or-equal operation
             case 24:
                 HMachine.memory[cell] = HMachine.FLIP;
-                HMachine.memory[cell+1] = HMachine.LT;
+                HMachine.memory[cell + 1] = HMachine.LT;
 
                 cell = cell + 2;
                 emitNot();
@@ -512,7 +487,7 @@ class Generate
             // R25 : construct instruction for larger-than operation
             case 25:
                 HMachine.memory[cell] = HMachine.FLIP;
-                HMachine.memory[cell+1] = HMachine.LT;
+                HMachine.memory[cell + 1] = HMachine.LT;
 
                 cell = cell + 2;
                 break;
@@ -528,7 +503,7 @@ class Generate
             // R27 : construct instructions to read and store integer value
             case 27:
                 HMachine.memory[cell] = HMachine.READI;
-                HMachine.memory[cell+1] = HMachine.STORE;
+                HMachine.memory[cell + 1] = HMachine.STORE;
 
                 cell = cell + 2;
                 break;
@@ -544,29 +519,28 @@ class Generate
             case 29:
                 teks = currConst;
                 HMachine.memory[cell] = HMachine.PUSH;
-                HMachine.memory[cell+1] = cell + (2 *teks.length()) + 7;
-                for (int i = 1; i <= teks.length(); i++)
-                {
-                    HMachine.memory[cell+(2*i)] = HMachine.PUSH;
-                    HMachine.memory[cell+(2*i)+1] = teks.charAt(teks.length()-i);
+                HMachine.memory[cell + 1] = cell + (2 * teks.length()) + 7;
+                for (int i = 1; i <= teks.length(); i++) {
+                    HMachine.memory[cell + (2 * i)] = HMachine.PUSH;
+                    HMachine.memory[cell + (2 * i) + 1] = teks.charAt(teks.length() - i);
                 }
-                HMachine.memory[cell+2+(2*teks.length())] = HMachine.PUSH;
-                HMachine.memory[cell+3+(2*teks.length())] = teks.length();
-                HMachine.memory[cell+4+(2*teks.length())] = HMachine.PUSH;
-                stackPush(cell+5+(2*teks.length()), printStack);
-                HMachine.memory[cell+6+(2*teks.length())] = HMachine.BR;
+                HMachine.memory[cell + 2 + (2 * teks.length())] = HMachine.PUSH;
+                HMachine.memory[cell + 3 + (2 * teks.length())] = teks.length();
+                HMachine.memory[cell + 4 + (2 * teks.length())] = HMachine.PUSH;
+                stackPush(cell + 5 + (2 * teks.length()), printStack);
+                HMachine.memory[cell + 6 + (2 * teks.length())] = HMachine.BR;
 
-                cell = HMachine.memory[cell+1];
+                cell = HMachine.memory[cell + 1];
                 break;
 
             // R30 : construct instructions to move the cursor to a new line
             case 30:
                 HMachine.memory[cell] = HMachine.PUSH;
-                HMachine.memory[cell+1] = 10;
-                HMachine.memory[cell+2] = HMachine.PUSH;
-                HMachine.memory[cell+3] = 13;
-                HMachine.memory[cell+4] = HMachine.PRINTC;
-                HMachine.memory[cell+5] = HMachine.PRINTC;
+                HMachine.memory[cell + 1] = 10;
+                HMachine.memory[cell + 2] = HMachine.PUSH;
+                HMachine.memory[cell + 3] = 13;
+                HMachine.memory[cell + 4] = HMachine.PRINTC;
+                HMachine.memory[cell + 5] = HMachine.PRINTC;
 
                 cell = cell + 6;
                 break;
@@ -593,7 +567,7 @@ class Generate
             // R34 : construct PUSH 0 instruction
             case 34:
                 HMachine.memory[cell] = HMachine.PUSH;
-                HMachine.memory[cell+1] = 0;
+                HMachine.memory[cell + 1] = 0;
 
                 cell = cell + 2;
                 break;
@@ -601,7 +575,7 @@ class Generate
             // R35 : construct PUSH 1 instruction
             case 35:
                 HMachine.memory[cell] = HMachine.PUSH;
-                HMachine.memory[cell+1] = 1;
+                HMachine.memory[cell + 1] = 1;
 
                 cell = cell + 2;
                 break;
@@ -609,8 +583,8 @@ class Generate
             // R36 : construct PUSH instruction for an integer value
             case 36:
                 HMachine.memory[cell] = HMachine.PUSH;
-                //HMachine.memory[cell+1] = Integer.parseInt(Context.currentStr);
-                HMachine.memory[cell+1] = Integer.parseInt(currConst);
+                // HMachine.memory[cell+1] = Integer.parseInt(Context.currentStr);
+                HMachine.memory[cell + 1] = Integer.parseInt(currConst);
 
                 cell = cell + 2;
                 break;
@@ -618,7 +592,7 @@ class Generate
             // R37 : construct instructions to allocate space for variable
             case 37:
                 HMachine.memory[cell] = HMachine.PUSH;
-                HMachine.memory[cell+1] = HMachine.undefined;
+                HMachine.memory[cell + 1] = HMachine.undefined;
 
                 cell = cell + 2;
                 break;
@@ -637,25 +611,25 @@ class Generate
                 break;
 
             // R39 : construct instructions to check non-negativity of array bounds,
-            //       and to allocate array
+            // and to allocate array
             case 39:
                 HMachine.memory[cell] = HMachine.PUSH;
-                HMachine.memory[cell+1] = 2;
-                HMachine.memory[cell+2] = HMachine.DUP;
-                HMachine.memory[cell+3] = HMachine.PUSH;
-                HMachine.memory[cell+4] = 0;
-                HMachine.memory[cell+5] = HMachine.LT;
-                HMachine.memory[cell+6] = HMachine.PUSH;
-                HMachine.memory[cell+7] = cell + 14;
-                HMachine.memory[cell+8] = HMachine.BF;
-                HMachine.memory[cell+9] = HMachine.PUSH;
-                HMachine.memory[cell+10] = Context.currentLine;
-                HMachine.memory[cell+11] = HMachine.PUSH;
+                HMachine.memory[cell + 1] = 2;
+                HMachine.memory[cell + 2] = HMachine.DUP;
+                HMachine.memory[cell + 3] = HMachine.PUSH;
+                HMachine.memory[cell + 4] = 0;
+                HMachine.memory[cell + 5] = HMachine.LT;
+                HMachine.memory[cell + 6] = HMachine.PUSH;
+                HMachine.memory[cell + 7] = cell + 14;
+                HMachine.memory[cell + 8] = HMachine.BF;
+                HMachine.memory[cell + 9] = HMachine.PUSH;
+                HMachine.memory[cell + 10] = Context.currentLine;
+                HMachine.memory[cell + 11] = HMachine.PUSH;
                 stackPush(cell + 12, boundStack);
-                HMachine.memory[cell+13] = HMachine.BR;
-                HMachine.memory[cell+14] = HMachine.PUSH;
-                HMachine.memory[cell+15] = HMachine.undefined;
-                HMachine.memory[cell+16] = HMachine.FLIP;
+                HMachine.memory[cell + 13] = HMachine.BR;
+                HMachine.memory[cell + 14] = HMachine.PUSH;
+                HMachine.memory[cell + 15] = HMachine.undefined;
+                HMachine.memory[cell + 16] = HMachine.FLIP;
 
                 cell = cell + 17;
                 stackPush(Context.orderNumber, dynamicArrayStack);
@@ -667,9 +641,9 @@ class Generate
                 on = Context.symbolHash.find(Context.currentStr).getOrderNum();
 
                 HMachine.memory[cell] = HMachine.NAME;
-                HMachine.memory[cell+1] = ll;
-                HMachine.memory[cell+2] = on;
-                HMachine.memory[cell+3] = HMachine.LOAD;
+                HMachine.memory[cell + 1] = ll;
+                HMachine.memory[cell + 2] = on;
+                HMachine.memory[cell + 3] = HMachine.LOAD;
 
                 cell = cell + 4;
                 stackPush(ll, lastArrayStack);
@@ -679,49 +653,49 @@ class Generate
             // R41 : construct instructions to check array index is inside the bounds
             case 41:
                 HMachine.memory[cell] = HMachine.PUSH;
-                HMachine.memory[cell+1] = 3;
-                HMachine.memory[cell+2] = HMachine.DUP;
-                HMachine.memory[cell+3] = HMachine.PUSH;
-                HMachine.memory[cell+4] = 0;
-                HMachine.memory[cell+5] = HMachine.LT;
-                HMachine.memory[cell+6] = HMachine.PUSH;
-                HMachine.memory[cell+7] = cell + 12;
-                HMachine.memory[cell+8] = HMachine.BF;
-                HMachine.memory[cell+9] = HMachine.PUSH;
-                HMachine.memory[cell+10] = cell + 23;
-                HMachine.memory[cell+11] = HMachine.BR;
-                HMachine.memory[cell+12] = HMachine.NAME;
+                HMachine.memory[cell + 1] = 3;
+                HMachine.memory[cell + 2] = HMachine.DUP;
+                HMachine.memory[cell + 3] = HMachine.PUSH;
+                HMachine.memory[cell + 4] = 0;
+                HMachine.memory[cell + 5] = HMachine.LT;
+                HMachine.memory[cell + 6] = HMachine.PUSH;
+                HMachine.memory[cell + 7] = cell + 12;
+                HMachine.memory[cell + 8] = HMachine.BF;
+                HMachine.memory[cell + 9] = HMachine.PUSH;
+                HMachine.memory[cell + 10] = cell + 23;
+                HMachine.memory[cell + 11] = HMachine.BR;
+                HMachine.memory[cell + 12] = HMachine.NAME;
                 on = stackPop(lastArrayStack, on);
                 ll = stackPop(lastArrayStack, ll);
-                HMachine.memory[cell+13] = ll;
-                HMachine.memory[cell+14] = on + 1;
-                HMachine.memory[cell+15] = HMachine.LOAD;
-                HMachine.memory[cell+16] = HMachine.LT;
-                HMachine.memory[cell+17] = HMachine.PUSH;
-                HMachine.memory[cell+18] = 0;
-                HMachine.memory[cell+19] = HMachine.EQ;
-                HMachine.memory[cell+20] = HMachine.PUSH;
-                HMachine.memory[cell+21] = cell + 28;
-                HMachine.memory[cell+22] = HMachine.BF;
-                HMachine.memory[cell+23] = HMachine.PUSH;
-                HMachine.memory[cell+24] = Context.currentLine;
-                HMachine.memory[cell+25] = HMachine.PUSH;
+                HMachine.memory[cell + 13] = ll;
+                HMachine.memory[cell + 14] = on + 1;
+                HMachine.memory[cell + 15] = HMachine.LOAD;
+                HMachine.memory[cell + 16] = HMachine.LT;
+                HMachine.memory[cell + 17] = HMachine.PUSH;
+                HMachine.memory[cell + 18] = 0;
+                HMachine.memory[cell + 19] = HMachine.EQ;
+                HMachine.memory[cell + 20] = HMachine.PUSH;
+                HMachine.memory[cell + 21] = cell + 28;
+                HMachine.memory[cell + 22] = HMachine.BF;
+                HMachine.memory[cell + 23] = HMachine.PUSH;
+                HMachine.memory[cell + 24] = Context.currentLine;
+                HMachine.memory[cell + 25] = HMachine.PUSH;
                 stackPush(cell + 26, boundStack);
-                HMachine.memory[cell+27] = HMachine.BR;
-                HMachine.memory[cell+28] = HMachine.ADD;
+                HMachine.memory[cell + 27] = HMachine.BR;
+                HMachine.memory[cell + 28] = HMachine.ADD;
 
                 cell = cell + 29;
                 break;
-                
+
             // R42 : construct instructions to return from procedure
             case 42:
                 HMachine.memory[cell] = HMachine.BR;
                 cell = cell + 1;
                 break;
-            
+
             case 43:
                 HMachine.memory[cell] = HMachine.FLIP;
-                HMachine.memory[cell+1] = HMachine.BR;
+                HMachine.memory[cell + 1] = HMachine.BR;
                 cell = cell + 2;
                 break;
 
@@ -729,12 +703,12 @@ class Generate
                 addr = stackPop(callStack, addr);
                 // Push return address
                 HMachine.memory[cell] = HMachine.PUSH;
-                HMachine.memory[cell+1] = cell+5;
+                HMachine.memory[cell + 1] = cell + 5;
                 // Push procedure address
-                HMachine.memory[cell+2] = HMachine.PUSH;
-                HMachine.memory[cell+3] = addr;
+                HMachine.memory[cell + 2] = HMachine.PUSH;
+                HMachine.memory[cell + 3] = addr;
                 // Branch
-                HMachine.memory[cell+4] = HMachine.BR;
+                HMachine.memory[cell + 4] = HMachine.BR;
                 cell = cell + 5;
                 break;
 
@@ -742,23 +716,88 @@ class Generate
                 if (Context.symbolHash.isExist(Context.currentStr)) {
                     Bucket b = Context.symbolHash.find(Context.currentStr);
                     if (b.getIdKind() == Bucket.PROCEDURE) {
-                         stackPush(b.getAddress(), callStack);
-                         stackPush(b.getParams(), paramCountStack);
+                        stackPush(b.getAddress(), callStack);
+                        stackPush(b.getParams(), paramCountStack);
                     } else {
                         System.out.println("Error: " + Context.currentStr + " is not a procedure.");
                     }
-
-                if (kode == Bucket.FUNCTION)
-                    {
-                   HMachine.memory[cell] = HMachine.PUSH;
-                   HMachine.memory[cell+1] = Context.symbolHash.find(Context.currentStr).getAddress();
-                   HMachine.memory[cell+2] = HMachine.BR;
-                   cell = cell + 3;
+                } else {
+                    System.out.println("Error: Procedure " + Context.currentStr + " undefined.");
                 }
-                else
-                {
-                   HMachine.memory[cell] = HMachine.LOAD;
-                   cell = cell + 1;
+                break;
+
+            case 46:
+                if (Context.symbolHash.isExist(Context.currentStr)) {
+                    Bucket b = Context.symbolHash.find(Context.currentStr);
+                    if (b.getIdKind() == Bucket.FUNCTION) {
+                        stackPush(b.getAddress(), callStack);
+                    } else {
+                        System.out.println("Error: " + Context.currentStr + " is not a function.");
+                    }
+                } else {
+                    System.out.println("Error: Function " + Context.currentStr + " undefined.");
+                }
+                break;
+
+            case 47:
+                addr = stackPop(callStack, addr);
+
+                HMachine.memory[cell] = HMachine.PUSH;
+                HMachine.memory[cell + 1] = cell + 5;
+
+                HMachine.memory[cell + 2] = HMachine.PUSH;
+                HMachine.memory[cell + 3] = addr;
+
+                HMachine.memory[cell + 4] = HMachine.BR;
+
+                // Cleanup
+                HMachine.memory[cell + 5] = HMachine.FLIP;
+                HMachine.memory[cell + 6] = HMachine.PUSHMT;
+                HMachine.memory[cell + 7] = HMachine.FLIP;
+                HMachine.memory[cell + 8] = HMachine.SUB;
+                HMachine.memory[cell + 9] = HMachine.FLIP;
+                HMachine.memory[cell + 10] = HMachine.STORE;
+                HMachine.memory[cell + 11] = HMachine.POP;
+                cell = cell + 12;
+                break;
+
+            case 48:
+                HMachine.memory[cell] = HMachine.FLIP;
+                HMachine.memory[cell + 1] = HMachine.PUSHMT;
+                HMachine.memory[cell + 2] = HMachine.FLIP;
+                HMachine.memory[cell + 3] = HMachine.SUB;
+                HMachine.memory[cell + 4] = HMachine.FLIP;
+                HMachine.memory[cell + 5] = HMachine.STORE;
+                cell = cell + 6;
+                break;
+
+            // R49 : construct instructions similar to R31
+            // for non-function identifier
+            case 49:
+                kode = Context.symbolHash.find(Context.currentStr).getIdKind();
+
+                if (kode == Bucket.FUNCTION) {
+                    HMachine.memory[cell] = HMachine.PUSH;
+                    HMachine.memory[cell + 1] = cell + 5;
+                    cell = cell + 2;
+                } else
+                    obtainAddress();
+
+                break;
+
+            // R50 : construct instructions similar to R32
+            // for non-function identifier
+            case 50:
+                kode = Context.symbolHash.find(Context.currentStr).getIdKind();
+
+                if (kode == Bucket.FUNCTION) {
+                    HMachine.memory[cell] = HMachine.PUSH;
+                    HMachine.memory[cell + 1] = Context.symbolHash.find(Context.currentStr).getAddress();
+                    HMachine.memory[cell + 2] = HMachine.BR;
+                    cell = cell + 3;
+                } else {
+                    HMachine.memory[cell] = HMachine.LOAD;
+                    cell = cell + 1;
                 }
 
                 break;
@@ -766,8 +805,7 @@ class Generate
             // R51 : construct instructions for end of the loop
             case 51:
                 top = stackPop(R51R52Stack, top);
-                while (!(top == loopMarker))
-                {
+                while (!(top == loopMarker)) {
                     HMachine.memory[top] = cell;
                     top = stackPop(R51R52Stack, top);
                 }
@@ -776,8 +814,8 @@ class Generate
             // R52 : construct instructions for exit statement
             case 52:
                 HMachine.memory[cell] = HMachine.PUSH;
-                HMachine.memory[cell+1] = HMachine.undefined;
-                HMachine.memory[cell+2] = HMachine.BR;
+                HMachine.memory[cell + 1] = HMachine.undefined;
+                HMachine.memory[cell + 2] = HMachine.BR;
                 stackPush(cell + 1, R51R52Stack);
 
                 cell = cell + 3;
@@ -791,8 +829,7 @@ class Generate
     }
 
     // Method to set the current token
-    public void setConst(String str)
-    {
+    public void setConst(String str) {
         currConst = str;
     }
 }
