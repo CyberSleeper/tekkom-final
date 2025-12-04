@@ -1,4 +1,0 @@
-{
-integer func funcWithParams(a:integer) = 2 + a;
-  put funcWithParams(69)
-}

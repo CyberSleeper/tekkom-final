@@ -1,8 +1,0 @@
-{
-    proc add (a : integer, b : integer) {
-        ;
-        
-    }
-    ;
-    add(10, 20)
-}

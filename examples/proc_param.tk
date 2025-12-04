@@ -1,8 +1,0 @@
-{
-    proc add (a as integer, b as integer) {
-        ;
-        put "sum = ", a + b
-    }
-    ;
-    add(10, 20)
-}

@@ -829,13 +829,16 @@ class Generate {
             // R54 : construct instructions for procedure call with parameters
             case 54:
                 addr = stackPop(callStack, addr);
+                // Pop parameter count (required by grammar but not used in this implementation)
+                stackPop(paramCountStack, 0);
+                
                 // Push return address
                 HMachine.memory[cell] = HMachine.PUSH;
                 HMachine.memory[cell + 1] = cell + 5;
                 // Push procedure address
                 HMachine.memory[cell + 2] = HMachine.PUSH;
                 HMachine.memory[cell + 3] = addr;
-                // Branch
+                // Branch to procedure (parameters are already on stack)
                 HMachine.memory[cell + 4] = HMachine.BR;
                 cell = cell + 5;
                 break;

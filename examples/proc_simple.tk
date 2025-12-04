@@ -1,8 +1,0 @@
-{
-    proc p {
-        ;
-        put "it's alive!"
-    }
-    ;
-    p
-}
