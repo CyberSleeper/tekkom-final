@@ -825,6 +825,20 @@ class Generate {
             case 53:
                 stackPush(loopMarker, R51R52Stack);
                 break;
+
+            // R54 : construct instructions for procedure call with parameters
+            case 54:
+                addr = stackPop(callStack, addr);
+                // Push return address
+                HMachine.memory[cell] = HMachine.PUSH;
+                HMachine.memory[cell + 1] = cell + 5;
+                // Push procedure address
+                HMachine.memory[cell + 2] = HMachine.PUSH;
+                HMachine.memory[cell + 3] = addr;
+                // Branch
+                HMachine.memory[cell + 4] = HMachine.BR;
+                cell = cell + 5;
+                break;
         }
     }
 
