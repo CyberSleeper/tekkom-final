@@ -1,0 +1,5 @@
+{
+    var x : integer
+    integer func doubleX = x * 40000 
+    ;
+}

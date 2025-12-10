@@ -1,0 +1,6 @@
+{
+    var x : integer
+    integer func doubleX = x * 3
+    integer func doubleX = x * 5
+    ;
+}

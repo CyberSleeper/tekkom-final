@@ -1,0 +1,23 @@
+{
+    integer func funcNoParam = 42
+    integer func funcWithParam(y : integer) = y + 10
+
+    proc procNoParam
+    {
+        ;
+        put "Proc No Param Called", skip
+    }
+
+    proc procWithParam(x : integer)
+    {
+        ;
+        put "Proc With Param: ", x, skip
+    }
+    ;
+
+    procNoParam
+    procWithParam(100)
+    
+    put "Func No Param: ", funcNoParam, skip
+    put "Func With Param: ", funcWithParam(20), skip
+}

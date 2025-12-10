@@ -1,0 +1,36 @@
+{
+    var x : integer
+    var y : integer
+    
+    integer func innerHelper = x + 5
+    
+    integer func outerFunc = {
+        var outerVar : integer;
+        outerVar := 10
+        put "outerVar in outerFunc: ", outerVar
+        put "Calling innerHelper from outerFunc"
+        outerVar := outerVar + innerHelper
+        put "outerVar after calling innerHelper: ", outerVar
+        ;
+        outerVar
+    }
+    ;
+    
+    x := 3
+    y := 2
+    
+    put "Before calling functions - x: ", x
+    put "Before calling functions - y: ", y
+    
+    put "Direct call to innerHelper: ", innerHelper
+    y := outerFunc
+    
+    put "After calling outerFunc - x: ", x
+    put "After calling outerFunc - y: ", y
+    
+    if y = 18 then
+        put "-- Success: Nested function result y = 18 --"
+    else
+        put "-- Failure: Nested function result y != 18 --"
+    end if
+}

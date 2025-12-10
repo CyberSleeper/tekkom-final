@@ -1,3 +1,4 @@
+
 /** 
  * @class: Context
  * This class constructs Context object that has attributes : 
@@ -23,6 +24,8 @@ class Context
         symbolHash = new Hash(HASH_SIZE);
         symbolStack = new Stack();
         typeStack = new Stack();
+        orderNumberStack = new Stack();
+        argumentStack = new Stack();
         printSymbols = false;
         errorCount = 0;
     }
@@ -41,6 +44,7 @@ class Context
         {
             case 0:
                 lexicalLevel++;
+                orderNumberStack.push(new Integer(orderNumber));
                 orderNumber = 0;
                 break;
             case 1:
@@ -50,14 +54,15 @@ class Context
             case 2:
                 symbolHash.delete(lexicalLevel);
                 lexicalLevel--;
+                orderNumber = ((Integer)orderNumberStack.pop()).intValue();
                 break;
             case 3:
                 if (symbolHash.isExist(currentStr, lexicalLevel))
-                {
+                    {
                     System.out.println("Variable declared at line " + currentLine + ": " + currentStr);
                     errorCount++;
                     System.err.println("\nProcess terminated.\nAt least " + (errorCount + parser.yylex.num_error)
-                                       + " error(s) detected.");
+                            + " error(s) detected.");
                     System.exit(1);
                 }
                 else
@@ -74,11 +79,11 @@ class Context
                 break;
             case 6:
                 if (!symbolHash.isExist(currentStr))
-                {
+                    {
                     System.out.println("Variable undeclared at line " + currentLine + ": " + currentStr);
                     errorCount++;
                     System.err.println("\nProcess terminated.\nAt least " + (errorCount + parser.yylex.num_error)
-                                       + " error(s) detected.");
+                            + " error(s) detected.");
                     System.exit(1);
                 }
                 else
@@ -130,7 +135,7 @@ class Context
             case 14:
                 int temp = ((Integer)typeStack.pop()).intValue();
                 if (temp != ((Integer)typeStack.peek()).intValue())
-                {
+                    {
                     System.out.println("Unmatched type at line " + currentLine + ": " + currentStr);
                     errorCount++;
                 }
@@ -139,7 +144,7 @@ class Context
             case 15:
                 temp = ((Integer)typeStack.pop()).intValue();
                 if ((temp != Bucket.INTEGER) && ((Integer)typeStack.peek()).intValue() != Bucket.INTEGER)
-                {
+                    {
                     System.out.println("Unmatched type at line " + currentLine + ": " + currentStr);
                     errorCount++;
                 }
@@ -148,7 +153,7 @@ class Context
             case 16:
                 temp = symbolHash.find((String)symbolStack.peek()).getIdType();
                 if (temp != ((Integer)typeStack.peek()).intValue())
-                {
+                    {
                     System.out.println("Unmatched type at line " + currentLine + ": " + currentStr);
                     errorCount++;
                 }
@@ -156,7 +161,7 @@ class Context
             case 17:
                 temp = symbolHash.find((String)symbolStack.peek()).getIdType();
                 if (temp != Bucket.INTEGER)
-                {
+                    {
                     System.out.println("Type of integer expected at line " + currentLine + ": " + currentStr);
                     errorCount++;
                 }
@@ -195,6 +200,110 @@ class Context
                         break;
                 }
                 break;
+            case 22:
+                symbolHash.find(currentStr).setLexicLev(lexicalLevel);
+                symbolHash.find(currentStr).setOrderNum(orderNumber);
+                orderNumber++;
+                break;
+            case 23:
+                typeStack.push(typeStack.peek());
+                break;
+            case 24:
+                symbolHash.find(currentStr).setIdKind(Bucket.PROCEDURE);
+                break;
+            case 25:
+                symbolHash.find(currentStr).setIdKind(Bucket.SCALAR);
+                // Mencari nama fungsi/prosedur yang menjadi induk dari parameter ini.
+                // Induknya pasti ada pada symbolStack sebelum deklarasi parameter dimulai.
+                int stackSize = symbolStack.size();
+                String parentName = null;
+
+                // Look through the symbol stack to find the function or procedure
+                for (int i = stackSize - 1; i >= 0; i--) {
+                    String candidateName = (String)symbolStack.get(i);
+                    int kind = symbolHash.find(candidateName).getIdKind();
+                    if (kind == Bucket.FUNCTION || kind == Bucket.PROCEDURE) {
+                        parentName = candidateName;
+                        break;
+                    }
+                }
+
+                if (parentName != null && symbolHash.find(parentName).getIdKind() == Bucket.FUNCTION) {
+                    // Jika induknya FUNCTION, parameter dimulai dari offset -4 (karena fungsi memiliki placeholder untuk nilai return)
+                    symbolHash.find(currentStr).setOrderNum(-4-orderNumber);
+                } else {
+                    // Jika induknya PROCEDURE, parameter dimulai dari offset -3 (karena prosedur tidak memiliki nilai return)
+                    symbolHash.find(currentStr).setOrderNum(-3-orderNumber);
+                }
+                orderNumber++;
+                break;
+            case 26:
+                symbolHash.find(currentStr).setIdKind(Bucket.FUNCTION);
+                break;
+            case 27:
+                C(2);
+                break;
+            case 28:
+                break;
+            case 29:
+                break;
+            case 30:
+                //push jumlah argument = 0
+                argumentStack.push(new Integer(0));
+                break;
+            case 31:
+                break;
+            case 32:
+                int noOfArgs = ((Integer)argumentStack.pop()).intValue();
+                if (noOfArgs != symbolHash.find((String)symbolStack.peek()).getParams()) {
+                    System.out.println("Arguments and parameter not matching " + currentLine + ": " + (String)symbolStack.peek());
+                    errorCount++;
+                }
+                break;
+            case 33:
+                //check tipe
+                switch (symbolHash.find((String)symbolStack.peek()).getIdKind())
+                {
+                    case Bucket.UNDEFINED:
+                        System.out.println("Variable not fully defined at line " + currentLine + ": " + currentStr);
+                        errorCount++;
+                        break;
+                    case Bucket.ARRAY:
+                        System.out.println("Function variable expected at line " + currentLine + ": " + currentStr);
+                        errorCount++;
+                        break;
+                    case Bucket.SCALAR:
+                        System.out.println("Function variable expected at line " + currentLine + ": " + currentStr);
+                        errorCount++;
+                        break;
+                }
+                break;
+            case 34:
+                int argument = ((Integer)argumentStack.pop()).intValue();
+                argument++;
+                argumentStack.push(new Integer(argument));
+                break;
+            case 35:
+                int params = ((Integer)argumentStack.pop()).intValue();
+                symbolHash.find((String)symbolStack.peek()).setParams(params);
+                break;
+            case 36:
+                temp = ((Integer)typeStack.pop()).intValue();
+                if (temp != ((Integer)typeStack.peek()).intValue())
+                    {
+                    System.out.println("Unmatched type at line " + currentLine + ": " + currentStr);
+                    errorCount++;
+                }
+                break;
+            case 37:
+                int code = Context.symbolHash.find(Context.currentStr).getIdKind();
+                if (code == Bucket.FUNCTION) {
+                    C(33);
+                }
+                else {
+                    C(20);
+                }
+                break;
         }
     }
 
@@ -226,6 +335,8 @@ class Context
     public static Hash symbolHash;
     private Stack symbolStack;
     private Stack typeStack;
+    private Stack orderNumberStack;
+    private Stack argumentStack;
     public static String currentStr;
     public static int currentLine;
     private boolean printSymbols;

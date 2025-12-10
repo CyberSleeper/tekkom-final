@@ -11,6 +11,7 @@ class Bucket
         this.orderNum = UNDEFINED;
         this.idType = UNDEFINED;
         this.idKind = UNDEFINED;
+        this.address = UNDEFINED;
         this.nextBucket = null;
     }
 
@@ -45,6 +46,16 @@ class Bucket
         this.idKind = idKind;
     }
 
+    public void setAddress(int address)
+    {
+        this.address = address;
+    }
+
+    public void setParams(int params)
+    {
+        this.params = params;
+    }
+
     public void setNextBucket()
     {
         nextBucket = null;
@@ -58,6 +69,16 @@ class Bucket
     public String getIdName()
     {
         return idName;
+    }
+
+    public int getAddress()
+    {
+        return address;
+    }
+
+    public int getParams()
+    {
+        return params;
     }
 
     public int getLexicLev()
@@ -146,5 +167,7 @@ class Bucket
     private int lexicLev;
     private int idType;
     private int idKind;
+    private int address;
+    private int params;
     private Bucket nextBucket;
 }
