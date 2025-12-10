@@ -213,11 +213,11 @@ class Context
                 break;
             case 25:
                 symbolHash.find(currentStr).setIdKind(Bucket.SCALAR);
-                // The parent function/procedure name should be the previous entry on symbolStack
-                // We need to find the function/procedure that these parameters belong to
+                // Mencari nama fungsi/prosedur yang menjadi induk dari parameter ini.
+                // Induknya pasti ada pada symbolStack sebelum deklarasi parameter dimulai.
                 int stackSize = symbolStack.size();
                 String parentName = null;
-                
+
                 // Look through the symbol stack to find the function or procedure
                 for (int i = stackSize - 1; i >= 0; i--) {
                     String candidateName = (String)symbolStack.get(i);
@@ -227,12 +227,12 @@ class Context
                         break;
                     }
                 }
-                
+
                 if (parentName != null && symbolHash.find(parentName).getIdKind() == Bucket.FUNCTION) {
-                    // Function parameters: offset -4 (because functions push return value placeholder)
+                    // Jika induknya FUNCTION, parameter dimulai dari offset -4 (karena fungsi memiliki placeholder untuk nilai return)
                     symbolHash.find(currentStr).setOrderNum(-4-orderNumber);
                 } else {
-                    // Procedure parameters: offset -3 (procedures don't push return value placeholder)  
+                    // Jika induknya PROCEDURE, parameter dimulai dari offset -3 (karena prosedur tidak memiliki nilai return)
                     symbolHash.find(currentStr).setOrderNum(-3-orderNumber);
                 }
                 orderNumber++;

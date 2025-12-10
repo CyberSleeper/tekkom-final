@@ -1,6 +1,0 @@
-{
-    var x : integer
-    boolean func wrongReturn = 25
-    ;
-    put wrongReturn
-}
