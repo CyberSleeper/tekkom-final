@@ -213,7 +213,28 @@ class Context
                 break;
             case 25:
                 symbolHash.find(currentStr).setIdKind(Bucket.SCALAR);
-                symbolHash.find(currentStr).setOrderNum(-3-orderNumber);
+                // The parent function/procedure name should be the previous entry on symbolStack
+                // We need to find the function/procedure that these parameters belong to
+                int stackSize = symbolStack.size();
+                String parentName = null;
+                
+                // Look through the symbol stack to find the function or procedure
+                for (int i = stackSize - 1; i >= 0; i--) {
+                    String candidateName = (String)symbolStack.get(i);
+                    int kind = symbolHash.find(candidateName).getIdKind();
+                    if (kind == Bucket.FUNCTION || kind == Bucket.PROCEDURE) {
+                        parentName = candidateName;
+                        break;
+                    }
+                }
+                
+                if (parentName != null && symbolHash.find(parentName).getIdKind() == Bucket.FUNCTION) {
+                    // Function parameters: offset -4 (because functions push return value placeholder)
+                    symbolHash.find(currentStr).setOrderNum(-4-orderNumber);
+                } else {
+                    // Procedure parameters: offset -3 (procedures don't push return value placeholder)  
+                    symbolHash.find(currentStr).setOrderNum(-3-orderNumber);
+                }
                 orderNumber++;
                 break;
             case 26:

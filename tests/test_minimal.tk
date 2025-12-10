@@ -1,8 +1,0 @@
-{
-    proc p {
-        ;
-        put "alive", skip
-    }
-    ;
-    put "called", skip
-}

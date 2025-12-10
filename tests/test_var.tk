@@ -1,6 +1,0 @@
-{
-    var x : integer
-    ;
-    x := 10
-    put x, skip
-}

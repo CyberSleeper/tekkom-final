@@ -1,6 +1,0 @@
-{
-    integer func f1 = 1
-    integer func f2 = 2
-    ;
-    put "f1f2", skip
-}

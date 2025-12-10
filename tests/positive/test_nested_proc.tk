@@ -1,0 +1,50 @@
+{
+    var x : integer
+    var y : integer
+    
+    proc innerProc
+    {
+        ;
+        y := y + 5
+        put "Inside innerProc - y incremented by 5: ", y
+        x := x * 2
+        put "Inside innerProc - x doubled: ", x
+    }
+    
+    proc outerProc
+    {
+        var localVar : integer;
+        localVar := 10
+        put "Inside outerProc - localVar: ", localVar
+        put "Inside outerProc - calling innerProc"
+        innerProc
+        put "Inside outerProc - after calling innerProc"
+        x := x + localVar
+        put "Inside outerProc - x after adding localVar: ", x
+    }
+    ;
+    
+    x := 3
+    y := 2
+    
+    put "Before calling procedures - x: ", x
+    put "Before calling procedures - y: ", y
+    
+    outerProc
+    
+    put "After calling outerProc - x: ", x
+    put "After calling outerProc - y: ", y
+    
+    if x = 16 then
+        if y = 7 then
+            put "-- Success: Nested procedure calls worked correctly --"
+            put "-- x = 16 and y = 7 as expected --"
+        else
+            put "-- Failure: x is correct but y is wrong --"
+            put "-- Expected: x = 16, y = 7 --"
+        end if
+    else
+        put "-- Failure: x is wrong --"
+        put "-- Expected: x = 16, y = 7 --"
+    end if
+}

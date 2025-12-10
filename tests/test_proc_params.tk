@@ -1,9 +1,0 @@
-{
-    proc myProc(val : integer)
-    {
-        ;
-        put "Value: ", val, skip
-    }
-    ;
-    myProc(10)
-}

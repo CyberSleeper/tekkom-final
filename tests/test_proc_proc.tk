@@ -1,6 +1,0 @@
-{
-    proc A { ; put "A", skip }
-    proc B { ; put "B", skip }
-    ;
-    put "AB", skip
-}

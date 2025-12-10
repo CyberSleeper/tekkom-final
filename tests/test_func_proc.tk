@@ -1,6 +1,0 @@
-{
-    integer func f = 1
-    proc p { ; put "p", skip }
-    ;
-    put "start", skip
-}

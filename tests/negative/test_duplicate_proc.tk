@@ -1,0 +1,12 @@
+{
+    var x : integer
+    proc testProc
+    { ;
+    x := 25
+    } 
+    proc testProc
+    { ;
+    x := 30
+    } 
+    ;
+}

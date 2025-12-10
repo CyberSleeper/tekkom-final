@@ -1,0 +1,11 @@
+{
+    ;
+
+    put "Test 1 - Undeclared function: ", undeclaredFunc(), skip
+
+    put "Test 2 - Undeclared function with params: ", undeclaredFuncWithParam(10), skip
+  
+    undeclaredProc()
+    
+    undeclaredProcWithParam(5)
+}

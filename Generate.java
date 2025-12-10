@@ -749,16 +749,8 @@ class Generate {
                 HMachine.memory[cell + 3] = addr;
 
                 HMachine.memory[cell + 4] = HMachine.BR;
-
-                // Cleanup
-                HMachine.memory[cell + 5] = HMachine.FLIP;
-                HMachine.memory[cell + 6] = HMachine.PUSHMT;
-                HMachine.memory[cell + 7] = HMachine.FLIP;
-                HMachine.memory[cell + 8] = HMachine.SUB;
-                HMachine.memory[cell + 9] = HMachine.FLIP;
-                HMachine.memory[cell + 10] = HMachine.STORE;
-                HMachine.memory[cell + 11] = HMachine.POP;
-                cell = cell + 12;
+                
+                cell = cell + 5;
                 break;
 
             case 48:

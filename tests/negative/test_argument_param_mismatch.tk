@@ -1,0 +1,10 @@
+{
+    proc procWithParam(x : integer)
+    {
+        ;
+        put "Proc With Param: ", x, skip
+    }
+    ;
+
+    procWithParam(100,100)
+}

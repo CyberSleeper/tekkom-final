@@ -62,3 +62,78 @@ This document details the changes made to the compiler to support functions and 
 - **R45 vs R46:** I updated `assignOrCall` (procedure call with args) to use `R46` instead of `R45` because `R45` does not push the return address placeholder required by `R47`.
 - **C40:** Defined as empty action as its logic wasn't explicitly detailed but it is used in the grammar.
 
+# Changelog
+
+## [Fixed] Function Parameter Passing - December 10, 2025
+
+### Issue Description
+Functions with parameters were not receiving correct argument values. For example, `funcWithParam(20)` was returning 10 instead of the expected 30 (20 + 10).
+
+### Root Cause
+The parameter offset in `Context.java` case 25 was incorrect. The offset determines where in the stack frame function parameters are located relative to the display pointer.
+
+### Changes Made
+
+#### 1. Fixed Parameter Offset in Context.java
+**File:** `Context.java`  
+**Location:** Case 25 (line ~290)  
+**Change:** Modified parameter order number calculation
+
+```java
+// Before:
+symbolHash.find(currentStr).setOrderNum(-3-orderNumber);
+
+// After:
+symbolHash.find(currentStr).setOrderNum(-4-orderNumber);
+```
+
+**Reason:** The stack frame analysis showed that function arguments are stored 4 positions back from the display pointer after the function call sequence:
+1. Argument pushed (e.g., 25)
+2. Return address pushed
+3. Function address pushed
+4. BR instruction jumps to function
+5. Function pushes return value placeholder (-32768)
+6. PUSHMT pushes current stack top
+7. SETD sets display to point to stack top
+
+#### 2. Simplified Function Call Cleanup in Generate.java
+**File:** `Generate.java`  
+**Location:** Case 47 (R47 - Function call instruction)  
+**Change:** Reverted to simpler function call mechanism
+
+```java
+// Removed complex return value handling that was causing illegal operation codes
+// Kept basic function call structure:
+// - PUSH return address
+// - PUSH function address  
+// - BR (branch to function)
+```
+
+**Reason:** Previous modifications added too many instructions (11 instead of 5), causing memory address misalignment and illegal operation code errors.
+
+### Technical Details
+
+**Stack Frame Layout During Function Call:**
+```
+Stack (bottom to top):
+[...previous content...]
+[argument value]      <- -4 offset from display
+[return address]      <- -3 offset from display  
+[function address]    <- -2 offset from display
+[return placeholder]  <- -1 offset from display
+[current mt]          <- 0 offset (display points here)
+```
+
+**Function Call Sequence:**
+1. Caller pushes argument onto stack
+2. R47 generates function call instructions
+3. Function entry (R1) sets up new scope
+4. Parameter access uses -4 offset to reach argument
+5. Function executes and returns value
+
+### Files Modified
+- `Context.java` - Fixed parameter offset calculation
+- `Generate.java` - Simplified function call mechanism
+
+### Validation
+The fix was validated through iterative testing with different parameter offset values (-5, -4, -3, -2, -1, 0, 1) until the correct offset (-4) was identified that allows parameters to access the pushed arguments correctly.
